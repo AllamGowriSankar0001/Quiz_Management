@@ -4,6 +4,7 @@ import "../index.css";
 
 const QuizCreate = () => {
   const navigate = useNavigate();
+  const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
   const [formData, setFormData] = useState({
     quizName: "",
     sessionCode: "",
@@ -84,7 +85,7 @@ const QuizCreate = () => {
     }));
 
     try {
-      const res = await fetch("http://localhost:3000/admin/createquiz", {
+      const res = await fetch(`${BASE_URL}/admin/createquiz`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
