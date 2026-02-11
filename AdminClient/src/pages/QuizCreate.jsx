@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
+import { verifyToken, clearAuthData } from "../utils/tokenVerification";
 
 const QuizCreate = () => {
   const navigate = useNavigate();
@@ -24,6 +25,25 @@ const QuizCreate = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const initialize = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        clearAuthData();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      const result = await verifyToken();
+      if (!result.isValid) {
+        clearAuthData();
+        navigate("/", { replace: true });
+      }
+    };
+
+    initialize();
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({

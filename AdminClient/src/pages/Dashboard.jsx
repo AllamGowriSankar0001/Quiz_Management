@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { verifyToken, clearAuthData } from "../utils/tokenVerification";
 
 const Dashboard = () => {
   const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
@@ -13,10 +14,9 @@ const Dashboard = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [selectedquizName, setSelectedquizName] = useState(null);
 
-  const token = localStorage.getItem("token");
-
   const fetchActiveSessions = async () => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${BASE_URL}/admin/active`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -32,6 +32,7 @@ const Dashboard = () => {
 
   const endSession = async (sessionCode) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${BASE_URL}/admin/end`, {
         method: "PUT",
         headers: {
@@ -56,6 +57,7 @@ const Dashboard = () => {
   };
   const viewQuestions = async (sessionCode,quizName) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
         `${BASE_URL}/admin/allquestionofsession?sessionCode=${sessionCode}`,
         {
@@ -81,6 +83,7 @@ const Dashboard = () => {
 
   const fetchQuizzes = async () => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${BASE_URL}/admin/quizzes`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -95,13 +98,27 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    const initialize = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        clearAuthData();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      const result = await verifyToken();
+      if (!result.isValid) {
+        clearAuthData();
+        navigate("/", { replace: true });
+        return;
+      }
+
       await Promise.all([fetchActiveSessions(), fetchQuizzes()]);
       setLoading(false);
     };
 
-    loadData();
-  }, []);
+    initialize();
+  }, [navigate]);
 
   if (loading) return <p className="loading">Loading dashboard...</p>;
   if (error) return <p className="error">{error}</p>;

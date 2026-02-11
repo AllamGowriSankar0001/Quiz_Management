@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../index.css";
+import { verifyToken, clearAuthData } from "../utils/tokenVerification";
 
 const AllQuizzes = () => {
   const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
+  const navigate = useNavigate();
 
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,9 +15,9 @@ const AllQuizzes = () => {
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [selectedSession, setSelectedSession] = useState(null);
   const [selectedquizName, setSelectedquizName] = useState(null);
-  const token = localStorage.getItem("token");
   const endSession = async (sessionCode) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${BASE_URL}/admin/end`, {
         method: "PUT",
         headers: {
@@ -39,6 +42,7 @@ const AllQuizzes = () => {
   };
   const viewQuestions = async (sessionCode, quizName) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
         `${BASE_URL}/admin/allquestionofsession?sessionCode=${sessionCode}`,
         {
@@ -62,8 +66,26 @@ const AllQuizzes = () => {
     }
   };
   useEffect(() => {
-    fetchQuizzes();
-  }, []);
+    const initialize = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        clearAuthData();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      const result = await verifyToken();
+      if (!result.isValid) {
+        clearAuthData();
+        navigate("/", { replace: true });
+        return;
+      }
+
+      await fetchQuizzes();
+    };
+
+    initialize();
+  }, [navigate]);
 
   const fetchQuizzes = async () => {
     try {
