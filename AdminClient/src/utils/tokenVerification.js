@@ -28,12 +28,16 @@ const isTokenExpired = (token) => {
 export const verifyToken = async () => {
   const token = localStorage.getItem("token");
   
-  if (!token) {
+  if (!token || token === "null" || token === "undefined") {
     return { isValid: false, error: "No token found" };
   }
 
   if (isTokenExpired(token)) {
     return { isValid: false, error: "Token expired" };
+  }
+
+  if (!BASE_URL) {
+    return { isValid: false, error: "Backend URL not configured" };
   }
 
   try {
@@ -54,11 +58,13 @@ export const verifyToken = async () => {
     }
 
     const data = await response.json();
-    return { isValid: data.valid === true, error: null };
-  } catch (error) {
-    if (error.message && error.message.includes("Failed to fetch")) {
-      return { isValid: false, error: "Network error. Please check your connection." };
+    if (data.valid === true) {
+      return { isValid: true, error: null };
     }
+    
+    return { isValid: false, error: data.message || "Token verification failed" };
+  } catch (error) {
+    console.error("Token verification error:", error);
     return { isValid: false, error: error.message || "Token verification failed" };
   }
 };

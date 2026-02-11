@@ -14,6 +14,10 @@ function Form() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return;
+      }
       const result = await verifyToken();
       if (result.isValid) {
         navigate("/dashboard", { replace: true });

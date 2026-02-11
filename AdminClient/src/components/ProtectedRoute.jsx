@@ -1,27 +1,55 @@
 import { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { verifyToken, clearAuthData } from "../utils/tokenVerification";
 
-const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+const ProtectedRoute = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
 
   useEffect(() => {
+    let isMounted = true;
+    
     const checkToken = async () => {
       setIsLoading(true);
-      const result = await verifyToken();
+      const token = localStorage.getItem("token");
       
-      if (result.isValid) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-        clearAuthData();
+      if (!token || token === "null" || token === "undefined" || token.trim() === "") {
+        if (isMounted) {
+          setIsAuthenticated(false);
+          clearAuthData();
+          setIsLoading(false);
+        }
+        return;
       }
-      setIsLoading(false);
+
+      try {
+        const result = await verifyToken();
+        
+        if (isMounted) {
+          if (result.isValid === true) {
+            setIsAuthenticated(true);
+          } else {
+            setIsAuthenticated(false);
+            clearAuthData();
+          }
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Authentication check failed:", error);
+        if (isMounted) {
+          setIsAuthenticated(false);
+          clearAuthData();
+          setIsLoading(false);
+        }
+      }
     };
 
     checkToken();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [location.pathname]);
 
   if (isLoading) {
@@ -42,7 +70,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/" replace state={{ from: location }} />;
   }
 
-  return children;
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
