@@ -7,7 +7,7 @@ function Sidebar() {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/login");
+    navigate("/");
   };
 
   const linkClass = ({ isActive }) =>
