@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../utils/tokenVerification";
+
 function Form() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -8,8 +10,17 @@ function Form() {
   const [show, setShow] = useState(false);
   const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
-
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const result = await verifyToken();
+      if (result.isValid) {
+        navigate("/dashboard", { replace: true });
+      }
+    };
+    checkAuth();
+  }, [navigate]);
   const handlelogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -29,14 +40,18 @@ function Form() {
         }),
       });
       const data = await res.json();
-      if (!data) {
+      
+      if (!res.ok) {
         throw new Error(data.message || "Login failed");
       }
-      localStorage.setItem("userData", data);
+      
+      if (!data || !data.YOUR_TOKEN) {
+        throw new Error(data.message || "Login failed - No token received");
+      }
+      
+      localStorage.setItem("userData", JSON.stringify(data));
       localStorage.setItem("token", data.YOUR_TOKEN);
-      console.log("Login success", data);
-      navigate("/dashboard");
-      console.log(res);
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       setError(error.message);
     } finally {

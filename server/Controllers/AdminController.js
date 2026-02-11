@@ -290,6 +290,28 @@ const viewAllQuestions = async (req, res) => {
   }
 };
 
+const VerifyTokenController = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized", valid: false });
+    }
+    res.status(200).json({ 
+      message: "Token is valid", 
+      valid: true,
+      user: {
+        email: req.user.email,
+        role: req.user.role
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ 
+      message: "Token verification failed", 
+      valid: false,
+      error: error.message 
+    });
+  }
+};
+
 module.exports = {
   AdminLogin,
   QuizCreate,
@@ -301,4 +323,5 @@ module.exports = {
   DeleteQuestionForSession,
   EndSession,
   viewAllQuestions,
+  VerifyTokenController,
 };

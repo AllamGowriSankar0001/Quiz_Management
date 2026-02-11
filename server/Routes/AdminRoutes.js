@@ -11,10 +11,12 @@ const {
   EditQuizSession,
   DeleteQuestionForSession,
   EndSession,
-  viewAllQuestions
+  viewAllQuestions,
+  VerifyTokenController
 } = require("../Controllers/AdminController");
 
 router.post("/login", AdminLogin);
+router.get("/verify", VerifyToken, VerifyTokenController);
 router.post("/createquiz", VerifyToken, QuizCreate);
 router.post("/addquestions", VerifyToken, QuestionsCreate);
 router.get("/quizzes", GetAllQuizzes);
