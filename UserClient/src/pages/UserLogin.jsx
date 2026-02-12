@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 function Form() {
   const { sessionCode } = useParams();
   const navigate = useNavigate();
-  const BASE_URL = import.meta.env.VITE_USER_FRONTEND_URL;
+  const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,44 +18,42 @@ function Form() {
     }
   }, [sessionCode]);
 
+
   const handleStartQuiz = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    if (!name || !email || !code) {
+    e.preventDefault(); 
+    setError(""); 
+    if (!name || !email || !code) { 
       return setError("All fields are required.");
-    }
-
-    try {
-      setLoading(true);
-
+     }
+      try {
+      setLoading(true); 
       const res = await fetch(`${BASE_URL}/user/startquiz`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          sessionCode: code,
-        }),
-      });
+         method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, sessionCode: code, }),
+         }); 
+         const data = await res.json().catch(() => null); 
+         console.log("startquiz response:", res.status, data); 
+         if (!res.ok) { 
+          return setError(data?.message || "Server error");
+         }
+         localStorage.setItem("email", email);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message);
-      }
-
-      navigate(`/attempt/${code}`, {
-        state: {
-          questions: data.questions,
-          quizName: data.quizName,
-        },
-      });
-
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+          navigate(`/attempt/${code}`, 
+            { 
+              state: { 
+                quizName: data.quizName, 
+                sessionCode: data.sessionCode, 
+                attemptId: data.attemptId, 
+                questions: data.questions, name, email, 
+              },
+             });
+    } catch (err) { 
+      console.error(err); 
+      setError(err.message || "Something went wrong");
+     } 
+     finally { 
+      setLoading(false); 
     }
   };
 

@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [selectedSession, setSelectedSession] = useState(null);
   const [selectedquizName, setSelectedquizName] = useState(null);
+  const [totalParticipants, setTotalParticipants] = useState([]);
 
   const fetchActiveSessions = async () => {
     try {
@@ -50,6 +51,7 @@ const Dashboard = () => {
         throw new Error(data.message || "Failed to end session");
       }
       fetchQuizzes();
+      fetchParticipants();
       console.log("Session ended:", data);
     } catch (err) {
       setError(err.message || "Failed to end session");
@@ -97,6 +99,15 @@ const Dashboard = () => {
     }
   };
 
+  const fetchParticipants = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/user/getallusers`);
+      const data = await res.json();
+      setTotalParticipants(data.UserData.length || 0);
+    } catch (err) {
+      setError("Failed to load participants");
+    }
+  };
   useEffect(() => {
     const initialize = async () => {
       const token = localStorage.getItem("token");
@@ -113,7 +124,7 @@ const Dashboard = () => {
         return;
       }
 
-      await Promise.all([fetchActiveSessions(), fetchQuizzes()]);
+      await Promise.all([fetchActiveSessions(), fetchQuizzes(),fetchParticipants()]);
       setLoading(false);
     };
 
@@ -147,13 +158,8 @@ const Dashboard = () => {
         </div>
 
         <div className="stat-card">
-          <h3>Total Attempts</h3>
-          <p>
-            {quizzes.reduce(
-              (total, quiz) => total + (quiz.attemptCount || 0),
-              0,
-            )}
-          </p>
+          <h3>Total Participants</h3>
+            <p>{totalParticipants}</p>
         </div>
       </div>
 

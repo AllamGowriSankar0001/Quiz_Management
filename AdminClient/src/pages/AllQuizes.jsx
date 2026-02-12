@@ -170,7 +170,7 @@ const AllQuizzes = () => {
   if (error) return <h2 className="status-text error">{error}</h2>;
 const handleShare = (sessionCode) => {
   const USER_FRONTEND_URL = import.meta.env.VITE_USER_FRONTEND_URL;
-  const shareLink = `${USER_FRONTEND_URL}/${sessionCode}`;
+  const shareLink = `${USER_FRONTEND_URL}/quiz/${sessionCode}`;
   navigator.clipboard.writeText(shareLink);
   alert("Link copied!");
 };
