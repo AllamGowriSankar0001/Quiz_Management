@@ -531,4 +531,7 @@ form h2 {
   flex-direction: column;
   gap: 5%;
 }
+.attempt-page-body-question-content {
+  width: 100%;
+}
 }
