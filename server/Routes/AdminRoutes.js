@@ -22,9 +22,9 @@ router.post("/addquestions", VerifyToken, QuestionsCreate);
 router.get("/quizzes", GetAllQuizzes);
 router.delete("/quizzes/:sessionCode", VerifyToken, DeleteQuizSession);
 router.get("/active", GetAllActiveSessions)
-router.put("/editquiz/:sessionCode", EditQuizSession);
-router.delete("/deletequestionforsession",DeleteQuestionForSession);
-router.put("/end",EndSession);
+router.put("/editquiz/:sessionCode",VerifyToken, EditQuizSession);
+router.delete("/deletequestionforsession",VerifyToken, DeleteQuestionForSession);
+router.put("/end",VerifyToken, EndSession);
 router.get("/allquestionofsession",viewAllQuestions)
 
 module.exports = router
